@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.InteropServices;
 using NUnit.Framework;
 
@@ -5,9 +6,9 @@ namespace LogAn.UnitTest
 {
     public class LogAnalyzerTest
     {
-        [SetUp]
-        public void Setup()
+        private LogAnalyzer MakeAnalyzer()
         {
+            return new LogAnalyzer();
         }
 
         [Test]
@@ -31,6 +32,28 @@ namespace LogAn.UnitTest
             bool result = logAnalyzer.IsValidLogFileName(fileName);
             //Assert
             Assert.True(result);
+        }
+
+        [Test]
+        public void IsValidFileName_EmptyString_ThrowsException()
+        {
+            // Arrange
+            LogAnalyzer la = MakeAnalyzer();
+
+            var ex = Assert.Catch<Exception>(() => la.IsValidLogFileName(""));
+
+            StringAssert.Contains("filename has to be provided", ex.Message);
+        }
+
+        [TestCase("badfile.foo", false)]
+        [TestCase("goodfile.slf", true)]
+        public void IsValidFileName_WhenCalled_ChangeWasLastFileNameValid(string fileName, bool expected)
+        {
+            LogAnalyzer la = MakeAnalyzer();
+
+            la.IsValidLogFileName(fileName);
+
+            Assert.AreEqual(expected, la.WasLastFileNameValid);
         }
     }
 }
